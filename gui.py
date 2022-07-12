@@ -1,17 +1,85 @@
-# Author:
-# Class:
-# Version:
+# Author: Alexander Jones
+# Class: CS361-400 Summer '22
+# Version: 0.1.0
 
-# Description:
-
+# Description: gui.py renders the visual components of the time-series
+# visualization tool. Data is passed to the matplot
+from tkinter import messagebox
 import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backend_bases import key_press_handler
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+import math
+
+
+# def plot():
+#
+#     # figure contianing the plot
+#     fig = plt.Figure(figsize=(5,5,), dpi=100)
+#     # Create TESTING y values
+#     y = [math.sin(i) for i in range(101)]
+#     # Add the subplot
+#     plot1 = fig.add_subplot(111)
+#     plot1.plot(y)
+#     # Create Tkinter canvas containing Matplotlib figure
+#     canvas = FigureCanvasTkAgg(fig, master=root)
+
+
+# Heuristic #1 (of 8): Explain the benefits of using new and existing fea- tures
+def csh1():
+    tk.messagebox.showinfo("New feature: Select different statistical views to see different views of your data.")
+
+
+# Heuristic #2 (of 8): Explain the costs of using new and existing features
+def csh2():
+    tk.messagebox.showifo("Choosing different statistical views may make plots different than you expect. If you are "
+                          "unfamiliar with these views, please see the reference.")
+
+# Heuristic #3 (of 8): Let people gather as much information as they want, and no more than they want
+
+# Heuristic #4 (of 8): Keep familiar features available
+
+# Heuristic #6 (of 8): Provide an explicit path through the task
+# Heuristic #7 (of 8): Provide ways to try out different approaches
+# Heuristic #8 (of 8): Encourage tinkerers to tinker mindfully
+
+# ------------------ This is ALL GUI stuff --------------------------------------
+# Color constants
+bg_color = "#f6f2ff"
+text_color = "#491d8b"
+frame_color = "#e8daff"
 
 
 root = tk.Tk()
 
-content = tk.Frame(root)
+# root.geometry('500x500') # Fixed window size? or make dynamically scalable?
+content = tk.Frame(root, background=bg_color)
 frame = tk.Frame(content, borderwidth=5, relief="ridge")
+
+# Radio Button Nested Frame
+
+data_display_type = tk.StringVar()
+# Average buttons
+average1 = tk.Radiobutton(content, text="Average", variable=data_display_type, value='average')
+average2 = tk.Radiobutton(content, text="Average", variable=data_display_type, value='average')
+average3 = tk.Radiobutton(content, text="Average", variable=data_display_type, value='average')
+average4 = tk.Radiobutton(content, text="Average", variable=data_display_type, value='average')
+# Median buttons
+median1 = tk.Radiobutton(content, text="Median", variable=data_display_type, value='median')
+median2 = tk.Radiobutton(content, text="Median", variable=data_display_type, value='median')
+median3 = tk.Radiobutton(content, text="Median", variable=data_display_type, value='median')
+median4 = tk.Radiobutton(content, text="Median", variable=data_display_type, value='median')
+# Variance Buttons
+variance1 = tk.Radiobutton(content, text="Variance", variable=data_display_type, value='variance')
+variance2 = tk.Radiobutton(content, text="Variance", variable=data_display_type, value='variance')
+variance3 = tk.Radiobutton(content, text="Variance", variable=data_display_type, value='variance')
+variance4 = tk.Radiobutton(content, text="Variance", variable=data_display_type, value='variance')
+# Std Dev Buttons
+std_dev1 = tk.Radiobutton(content, text="Standard Deviation", variable=data_display_type, value='stddev')
+std_dev2 = tk.Radiobutton(content, text="Standard Deviation", variable=data_display_type, value='stddev')
+std_dev3 = tk.Radiobutton(content, text="Standard Deviation", variable=data_display_type, value='stddev')
+std_dev4 = tk.Radiobutton(content, text="Standard Deviation", variable=data_display_type, value='stddev')
 
 # Data upload
 date_label = tk.Label(content, text="Viewing Data Date Range: ")
@@ -26,7 +94,9 @@ vis_title2 = tk.Label(content, text="Second Plot Title")
 undo_btn = tk.Button(content, text="Undo")
 redo_btn = tk.Button(content, text="Redo")
 
-# Radio Button Nested Frame
+# Slider
+time_window = tk.Scale(from_=0, to=90, orient="horizontal")
+
 
 
 # Cognitive Style Heuristics Compliance
@@ -36,45 +106,93 @@ drop1_csh = tk.Label(content, text="Dropdown1 CSH")
 drop2_csh = tk.Label(content, text="Dropdown2 CSH")
 drop3_csh = tk.Label(content, text="Dropdown3 CSH")
 drop4_csh = tk.Label(content, text="Dropdown4 csh")
-
+#       1               2                   3              4
 # ---------------------------------------------------------------|
-# date_label    | date_label_var    |               | upload_btn |
+# 1 date_label    | date_label_var  |               | upload_btn   |
 # ---------------------------------------------------------------|
-# vis_title1    | vis_csh1          | drop1_csh     | drop2_csh  |
+# 2 vis_title1    | vis_csh1       | drop1_csh     | drop2_csh     |
 # ---------------------------------------------------------------|
-# vis_plot1     | vis_plot1         | dropdown1     | dropdown2  |
+# 3 vis_plot1     | vis_plot1      | radio_btn1    |radio_btn2     |
 # ---------------------------------------------------------------|
-# vis_title2    | vis_csh2          | drop3_csh     | drop4_csh  |
+# 4 vis_plot1     | vis_plot1      | radio_btn2    |radio_btn2     |
 # ---------------------------------------------------------------|
-# vis_plot2     | vis_plot2         | dropdown1     | dropdown2  |
+# 5 vis_plot1     | vis_plot1      | radio_btn3    |radio_btn2     |
 # ---------------------------------------------------------------|
-# slider         | slider            | undo_btn      | redo_btn  |
+# 6 vis_plot1     | vis_plot1      | radio_btn4    |radio_btn2     |
+# ---------------------------------------------------------------|
+# 7 vis_title2    | vis_csh2       | drop1_csh     | drop2_csh     |
+# ---------------------------------------------------------------|
+# 8 vis_plot2     | vis_plot2      | radio_btn1    |radio_btn2     |
+# ---------------------------------------------------------------|
+# 9 vis_plot2     | vis_plot2      | radio_btn2    |radio_btn2     |
+# ---------------------------------------------------------------|
+# 10 vis_plot2     | vis_plot2      | radio_btn3    |radio_btn2     |
+# ---------------------------------------------------------------|
+# 11 vis_plot2     | vis_plot2      | radio_btn4    |radio_btn2     |
+# ---------------------------------------------------------------|
+# 12 slider         | slider        | undo_btn      | redo_btn      |
 # ---------------------------------------------------------------|
 
 # Row 1
 content.grid(column=0, row=0)
-frame.grid(column=0, row=0, columnspan=4, rowspan=6)
+# frame.grid(column=0, row=0, columnspan=4, rowspan=6) Do we need this?
 date_label.grid(column=0, row=0)
 date_label_var.grid(column=1, row=0)
 upload_btn.grid(column=3, row=0, columnspan=2)
+
 # Row 2
 vis_title1.grid(column=0, row=1)
 vis_csh1.grid(column=1, row=1)
 drop1_csh.grid(column=2, row=1)
 drop2_csh.grid(column=3, row=1)
+
 # Row 3
-# plot1.grid(column=0, row=2, columnspan=2)
-# Nested radio button grid1.grid(column=2, row=2)
+# plot1.grid(column=0, row=2, columnspan=2, rowspan=4)
+average1.grid(column=2, row=2)
+average2.grid(column=3, row=2)
 # Nested radio button grid2.grid(column=3, row =2)
 
 # Row 4
-# plot2.grid(column=0, row=3, columnspan=2)
-# Nested radio button grid3.grid(column=2, row=3)
-# Nested radio button grid4.grid(column=2, row=4)
+median1.grid(column=2, row=3)
+median2.grid(column=3, row=3)
 
 # Row 5
-# slider.grid(column=0, row=0, columnspan=2)
-undo_btn.grid(column=2, row=3)
-redo_btn.grid(column=3, row=3)
+variance1.grid(column=2, row=4)
+variance2.grid(column=3, row=4)
+
+# Row 6
+std_dev1.grid(column=2, row=5)
+std_dev2.grid(column=3, row=5)
+# plot2.grid(column=0, row=3, columnspan=2, rowspan=4)
+
+
+# Row 7
+vis_title2.grid(column=0, row=6)
+vis_csh2.grid(column=1, row=6)
+drop3_csh.grid(column=2, row=6)
+drop4_csh.grid(column=3, row=6)
+
+# Row 8
+# plot2.grid(column=0, row=7, columnspan=2, rowspan=4)
+average3.grid(column=2, row=7)
+average4.grid(column=3, row=7)
+
+
+# Row 9
+median3.grid(column=2, row=8)
+median4.grid(column=3, row=8)
+
+# Row 10
+variance3.grid(column=2, row=9)
+variance4.grid(column=3, row=9)
+
+# Row 11
+std_dev3.grid(column=2, row=10)
+std_dev4.grid(column=3, row=10)
+
+# Row 12
+time_window.grid(column=0, row=11, columnspan=2)
+undo_btn.grid(column=2, row=11)
+redo_btn.grid(column=3, row=11)
 # Main loop to begin looking for event listeners
 root.mainloop()
